@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.database import get_supabase, SIGNALS_TABLE, PIPELINE_RUNS_TABLE
 from app.models.schemas import PipelineRunResult, PipelineStatus
+from app.config import get_settings
 from app.pipeline.chain import analyze_article
-from app.pipeline.classifier import classify_article
 from app.pipeline.ingest import fetch_articles
 from app.pipeline.tracker import end_pipeline_run, log_metrics, start_pipeline_run
 from app.utils.helpers import clean_text
@@ -43,20 +43,17 @@ def run_pipeline():
             try:
                 article["content"] = clean_text(article.get("content", ""))
                 llm_result = analyze_article(article)
-                clf_result = classify_article(article)
 
                 log_metrics(
                     {
-                        "classifier_score": clf_result["classifier_score"],
                         "llm_confidence": llm_result.get("confidence_score", 0.0),
                     }
                 )
 
                 logger.info(
-                    "Article classified — LLM: %s | Classifier: %s (%.2f)",
+                    "Article classified — LLM: %s | confidence: %.2f",
                     llm_result.get("category"),
-                    clf_result["classifier_category"],
-                    clf_result["classifier_score"],
+                    llm_result.get("confidence_score", 0.0),
                 )
 
                 signal_data = {
