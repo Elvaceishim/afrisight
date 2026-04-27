@@ -1,0 +1,35 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --allowed-hosts "*"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8888:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mlflow
+    volumes:
+      - ./backend/mlruns:/app/mlruns
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mlflow_data:

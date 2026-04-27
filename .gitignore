@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+mlruns/
+mlflow.db
+dist/
+.venv/
+*.egg-info/
+.DS_Store
