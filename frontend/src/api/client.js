@@ -2,6 +2,9 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8888",
+  headers: {
+    "X-API-Key": import.meta.env.VITE_API_SECRET_KEY || "",
+  },
 });
 
 export async function getSignals(filters = {}) {

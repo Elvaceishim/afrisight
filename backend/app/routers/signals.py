@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 
+from app.auth import verify_key
 from app.database import get_supabase, SIGNALS_TABLE
 from app.models.schemas import Signal, SignalCreate
 
@@ -35,14 +36,14 @@ def get_signal(signal_id: str):
     return result.data[0]
 
 
-@router.post("", response_model=Signal, status_code=201)
+@router.post("", response_model=Signal, status_code=201, dependencies=[Depends(verify_key)])
 def create_signal(payload: SignalCreate):
     db = get_supabase()
     result = db.table(SIGNALS_TABLE).insert(payload.model_dump()).execute()
     return result.data[0]
 
 
-@router.delete("/{signal_id}", status_code=204)
+@router.delete("/{signal_id}", status_code=204, dependencies=[Depends(verify_key)])
 def delete_signal(signal_id: str):
     db = get_supabase()
     existing = db.table(SIGNALS_TABLE).select("id").eq("id", signal_id).execute()

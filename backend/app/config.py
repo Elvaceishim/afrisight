@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     news_api_key: str = ""
     mlflow_tracking_uri: str = "http://mlflow:5000"
     environment: str = "development"
+    api_secret_key: str = ""
 
     class Config:
         env_file = ".env"

@@ -1,13 +1,12 @@
 import logging
 import time
 import uuid
-from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.auth import verify_key
 from app.database import get_supabase, SIGNALS_TABLE, PIPELINE_RUNS_TABLE
 from app.models.schemas import PipelineRunResult, PipelineStatus
-from app.config import get_settings
 from app.pipeline.chain import analyze_article
 from app.pipeline.ingest import fetch_articles
 from app.pipeline.tracker import end_pipeline_run, log_metrics, start_pipeline_run
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
 
-@router.post("/run", response_model=PipelineRunResult)
+@router.post("/run", response_model=PipelineRunResult, dependencies=[Depends(verify_key)])
 def run_pipeline():
     run_id = str(uuid.uuid4())
     start_ts = time.time()
