@@ -2,10 +2,11 @@ import logging
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.auth import verify_key
 from app.database import get_supabase, SIGNALS_TABLE, PIPELINE_RUNS_TABLE
+from app.main import limiter
 from app.models.schemas import PipelineRunResult, PipelineStatus
 from app.pipeline.chain import analyze_article
 from app.pipeline.ingest import fetch_articles
@@ -18,7 +19,8 @@ router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
 
 @router.post("/run", response_model=PipelineRunResult, dependencies=[Depends(verify_key)])
-def run_pipeline():
+@limiter.limit("2/hour")
+def run_pipeline(request: Request):
     run_id = str(uuid.uuid4())
     start_ts = time.time()
 
